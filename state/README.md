@@ -1,5 +1,3 @@
-[![N|Solid](https://kafka.apache.org/images/logo.png)](https://kafka.apache.org/)
-
 
 # KStreams API for stateful processing
 ---
