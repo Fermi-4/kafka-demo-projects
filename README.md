@@ -1,3 +1,7 @@
+[![N|Solid](https://kafka.apache.org/images/logo.png)](https://kafka.apache.org/)
+
+---
+
 # kafka-demo-projects
 demo projects for kafka that use stateful stream processing and windowing
 
