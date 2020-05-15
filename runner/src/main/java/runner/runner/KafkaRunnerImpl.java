@@ -17,6 +17,9 @@ import org.apache.kafka.common.PartitionInfo;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.serialization.Deserializer;
 
+import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
+
 /**
  * 
  * This class pulls an entire Kafka topic and then exits based on the latest
@@ -27,6 +30,7 @@ import org.apache.kafka.common.serialization.Deserializer;
  * @param <K>
  * @param <T>
  */
+@Slf4j
 public class KafkaRunnerImpl<K, T> implements KafkaRunner<T> {
 
 	final Deserializer<K> _keySerde;
@@ -84,12 +88,13 @@ public class KafkaRunnerImpl<K, T> implements KafkaRunner<T> {
 			/*
 			 * seek the beginning of assigned partitions
 			 */
-			consumer.seekToBeginning(partitions);
+//			consumer.seekToBeginning(partitions);
 			
 			/*
 			 * the target partition end offsets
 			 */
 			_endOffsets = consumer.endOffsets(partitions);
+			log.info(_endOffsets.toString());
 			
 			/*
 			 * flag once all end offsets have been met - exit loop
@@ -100,14 +105,12 @@ public class KafkaRunnerImpl<K, T> implements KafkaRunner<T> {
 			 * start loop
 			 */
 			while(offsetsNotReachedForAllPartitions) {
-				
 				/*
 				 * poll until sampleTimeout is reached
 				 */
 				ConsumerRecords<K, T> sample = consumer.poll(Duration.ofMillis(_sampleTimeout));		
 				
 				for(TopicPartition partition : partitions) {
-					
 					/*
 					 * grab the records only from this partition
 					 */
@@ -119,12 +122,14 @@ public class KafkaRunnerImpl<K, T> implements KafkaRunner<T> {
 					 * for current partition
 					 */
 					for(ConsumerRecord<K, T> consumerRecord : recordsForPartition) {
+						log.info("record offset: " + consumerRecord.offset() + " partition: " + consumerRecord.partition());
 						if(consumerRecord.offset() <= _endOffsets.get(partition)) {
 							records.add(consumerRecord.value());
 						}
 					}
 				}
 				
+	
 				offsetsNotReachedForAllPartitions = comparePartitionOffsets(consumer);
 			}
 		
@@ -139,7 +144,13 @@ public class KafkaRunnerImpl<K, T> implements KafkaRunner<T> {
 	}
 
 	private boolean comparePartitionOffsets(KafkaConsumer<K, T> consumer) {
-		return _endOffsets.keySet().stream().anyMatch(tp -> consumer.position(tp) <= _endOffsets.get(tp));
+		return !_endOffsets.keySet().stream().allMatch(tp -> {
+			
+//			log.info("consumer: " +consumer.position(tp) + " target: " + _endOffsets.get(tp));
+			boolean offsetsReached = consumer.position(tp) >= (_endOffsets.get(tp)-1);
+			if(offsetsReached) log.info("Target offsets reached for partition: " + tp.partition());
+			return offsetsReached;
+		});
 	}
 
 	private Properties getConsumerProps() {
