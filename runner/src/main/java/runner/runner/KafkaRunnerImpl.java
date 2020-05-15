@@ -139,7 +139,7 @@ public class KafkaRunnerImpl<K, T> implements KafkaRunner<T> {
 	}
 
 	private boolean comparePartitionOffsets(KafkaConsumer<K, T> consumer) {
-		return _endOffsets.keySet().stream().anyMatch(tp -> consumer.position(tp) < _endOffsets.get(tp));
+		return _endOffsets.keySet().stream().anyMatch(tp -> consumer.position(tp) <= _endOffsets.get(tp));
 	}
 
 	private Properties getConsumerProps() {
