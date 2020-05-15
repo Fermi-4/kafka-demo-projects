@@ -15,20 +15,8 @@ public class SlotDataSupplier implements Supplier<SlotData> {
 	
 	@Override
 	public SlotData get() {
-		
-		boolean addBoard = false;
-		if(Math.random() > 0.50) {
-			addBoard = true;
-		}
-		
-		SlotData slotdata;
-		if(addBoard) {
-			slotdata = new SlotData(testerId, slotId, boardId, LocalDateTime.now().toString());			
-		} else {
-			slotdata = new SlotData(testerId, slotId, "", LocalDateTime.now().toString());
-		}
-		
-		return slotdata;
+		return (Math.random() > 0.50) ? new SlotData(testerId, slotId, boardId, LocalDateTime.now().toString())
+			: new SlotData(testerId, slotId, "", LocalDateTime.now().toString());
 	}
 
 }
