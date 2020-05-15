@@ -45,8 +45,9 @@ public class SlotDataProducer {
 		});
 		
 		while(true) {
-			producer.send(new ProducerRecord<String, SlotData>(SLOT_DATA_TOPIC, _supplier.get()));
-			System.out.println("Sent record");
+			SlotData slotdata = _supplier.get();
+			System.out.println("Sending record: " + slotdata.toString());
+			producer.send(new ProducerRecord<String, SlotData>(SLOT_DATA_TOPIC, slotdata));
 			Thread.sleep(DELAY);
 		}
 		
