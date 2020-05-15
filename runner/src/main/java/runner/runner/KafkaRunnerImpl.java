@@ -17,7 +17,6 @@ import org.apache.kafka.common.PartitionInfo;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.serialization.Deserializer;
 
-import lombok.extern.log4j.Log4j2;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -88,7 +87,7 @@ public class KafkaRunnerImpl<K, T> implements KafkaRunner<T> {
 			/*
 			 * seek the beginning of assigned partitions
 			 */
-//			consumer.seekToBeginning(partitions);
+			consumer.seekToBeginning(partitions);
 			
 			/*
 			 * the target partition end offsets
@@ -122,7 +121,7 @@ public class KafkaRunnerImpl<K, T> implements KafkaRunner<T> {
 					 * for current partition
 					 */
 					for(ConsumerRecord<K, T> consumerRecord : recordsForPartition) {
-						log.info("record offset: " + consumerRecord.offset() + " partition: " + consumerRecord.partition());
+						log.debug("record offset: " + consumerRecord.offset() + " partition: " + consumerRecord.partition());
 						if(consumerRecord.offset() <= _endOffsets.get(partition)) {
 							records.add(consumerRecord.value());
 						}
@@ -156,7 +155,7 @@ public class KafkaRunnerImpl<K, T> implements KafkaRunner<T> {
 	private Properties getConsumerProps() {
 		Properties properties = new Properties();
 		properties.put(ConsumerConfig.GROUP_ID_CONFIG, "runner-group");
-		properties.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
+		properties.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, true);
 		properties.put(ConsumerConfig.REQUEST_TIMEOUT_MS_CONFIG, _requestTimeout); // polls until this timeout is reached then closes
 		properties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, _bootstrapServers);
 		properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, _valueSerde.getClass());
